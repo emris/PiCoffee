@@ -1,0 +1,43 @@
+body {
+  padding-top: 50px;
+  background-color: #eee;
+  min-height: 100%;
+  height: 100%;
+}
+html {
+  min-height: 100%;
+  height: 100%;
+}
+.bg {
+  background-image: url("index_bg.jpg");
+  min-height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bg-reg {
+  background-image: url("bg1.jpg");
+  min-height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bg-login {
+  background-image: url("bg1.jpg");
+  min-height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+hr {
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 2px;
+}
+.alert {
+  margin-bottom: 0px;
+}
