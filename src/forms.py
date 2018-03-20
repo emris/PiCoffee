@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, HiddenField
+from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import check_password_hash
 from models import Users
@@ -35,7 +35,7 @@ class RegisterForm(FlaskForm):
   uid = StringField('UserID', validators=[InputRequired(), Length(min=4, max=5)])
   password1 = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
   password2 = PasswordField('Password Echo', validators=[InputRequired(), Length(min=8, max=80)])
-  email = StringField('E-Mail', validators=[InputRequired(), Email(message='Invalid E-Mail'.decode('utf-8')), Length(max=60)])
+  email = StringField('E-Mail', validators=[InputRequired(), Email(message='Invalid E-Mail'), Length(max=60)])
   firstname = StringField('First Name', validators=[InputRequired(), Length(min=4, max=20)])
   lastname = StringField('Last Name', validators=[InputRequired(), Length(min=4, max=20)])
   
@@ -81,7 +81,7 @@ class TokensForm(FlaskForm):
 class ProfileUpdateForm(FlaskForm):
   password1 = PasswordField('Password', validators=[Length(max=80)])
   password2 = PasswordField('Password Echo', validators=[Length(max=80)])
-  email = StringField('E-Mail', validators=[InputRequired(), Email(message='Invalid E-Mail'.decode('utf-8')), Length(max=60)])
+  email = StringField('E-Mail', validators=[InputRequired(), Email(message='Invalid E-Mail'), Length(max=60)])
   firstname = StringField('First Name', validators=[InputRequired(), Length(min=4, max=20)])
   lastname = StringField('Last Name', validators=[InputRequired(), Length(min=4, max=20)])
   
