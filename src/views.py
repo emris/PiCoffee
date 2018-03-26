@@ -3,11 +3,12 @@
 from PICoffee import app, db
 from flask import render_template, url_for, request, flash
 from flask_bootstrap import Bootstrap
-from models import Users
-from forms import LoginForm, RegisterForm, TokensForm, ProfileUpdateForm
+from models import Users, CoffeeBrands, CoffeeNames
+from forms import LoginForm, RegisterForm, TokensForm, ProfileUpdateForm, CoffeeBrandForm
 from werkzeug.utils import redirect
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash
 from flask_login.utils import login_required, logout_user, login_user, current_user
+from sqlalchemy import func
 
 Bootstrap(app)
 
@@ -20,7 +21,7 @@ def login():
   form = LoginForm()
   if form.validate_on_submit():
     user = Users.query.filter_by(uid=form.uid.data).first()
-    if user.registered:
+    if user.role > 0:
       login_user(user, remember=form.remember.data)
       return redirect(url_for('coffee'))
     flash('User account waiting for approval!', 'info')
@@ -48,7 +49,7 @@ def register():
 @login_required
 def coffee():
   user = Users.query.filter_by(id=current_user.id).first()
-  if user.role > 0:
+  if user.role > 1:
     return render_template('coffee.html', admin=True)
   return render_template('coffee.html', admin=False)
 
@@ -93,10 +94,48 @@ def tokens(a):
       return redirect('/tokens/list')
   return render_template('tokens.html', form=form, toks=toks)
 
-@app.route('/admin/<a>', methods=['GET', 'POST'])
+@app.route('/admin/brands/<a>', methods=['GET', 'POST'])
 @login_required
-def admin(a):
+def brands(a):
   user = Users.query.filter_by(id=current_user.id).first()
-  if user.role > 0:
-    return render_template('coffee.html', admin=True)
-  return render_template('coffee.html', admin=False)
+  if user.role < 1:
+    return redirect('/coffee')
+
+  form = CoffeeBrandForm()
+  bmax = db.session.query(CoffeeBrands.name_id, func.max(CoffeeBrands.version).label('vermax')).group_by(CoffeeBrands.name_id).subquery()
+  brands = CoffeeBrands.query.join(bmax, bmax.c.vermax == CoffeeBrands.version).filter(bmax.c.name_id == CoffeeBrands.name_id).all()
+  if request.method == 'POST':
+    if (a == "DEL"):
+      brand = CoffeeBrands.query.filter_by(id=request.form['id']).first()
+      if brand.hide:
+        brand.hide = False
+      else:
+        brand.hide = True
+      db.session.commit()
+      return redirect('/admin/brands/list')
+    elif (a == "ADD"):
+      if form.validate_on_submit():
+        cn = CoffeeNames.query.filter_by(name=form.name.data).first()
+        if cn:
+          brand = CoffeeBrands.query.filter_by(name_id=cn.id).order_by(CoffeeBrands.version.desc()).first()
+          cb = CoffeeBrands(cn, form.price.data)
+          cb.version = brand.version + 1
+          db.session.add(cb)
+          db.session.commit()
+        else:
+          cn = CoffeeNames(form.name.data)
+          db.session.add(cn)
+          db.session.commit()
+          brand = CoffeeBrands(cn, form.price.data)
+          db.session.add(brand)
+          db.session.commit()
+        return redirect('/admin/brands/list')
+      return render_template('brands.html', form=form, brands=brands)
+  if (a == "list"):
+    return render_template('brands.html', form=form, brands=brands)
+  return redirect('/coffee')
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+  return redirect('/coffee')

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from wtforms import StringField, PasswordField, BooleanField, DecimalField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import check_password_hash
 from models import Users
@@ -95,6 +95,24 @@ class ProfileUpdateForm(FlaskForm):
     
     if (self.password1.data != self.password2.data):
       self.password2.errors.append('Vertippt!')
+      return False
+    
+    return True
+
+class CoffeeBrandForm(FlaskForm):
+  name = StringField('Name', validators=[Length(max=100)])
+  price = DecimalField('Price', validators=[InputRequired()], rounding=True)
+  
+  def __init__(self, *args, **kwargs):
+        FlaskForm.__init__(self, *args, **kwargs)
+  
+  def validate(self):
+    rv = FlaskForm.validate(self)
+    if not rv:
+      return False
+    
+    if (self.price.data > 999.99):
+      self.price.errors.append('Price too high!.')
       return False
     
     return True

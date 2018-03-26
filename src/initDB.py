@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-from PICoffee import app, db
-from models import Users, CoffeeBrands, ActiveData
+from PICoffee import db
+from models import Users, CoffeeNames, CoffeeBrands, ActiveData
 
 #Create DB
 db.create_all()
@@ -14,12 +14,25 @@ u.registered = True
 db.session.add(u)
 db.session.commit()
 
-# Add a few Coffee brands 
-c = CoffeeBrands("Happy Coffee", 25.90, db.func.current_timestamp(), False)
+# Add a few Coffee Brands
+cn = CoffeeNames("Happy Coffee")
+db.session.add(cn)
+db.session.commit()
+c = CoffeeBrands(cn, 25.90)
 db.session.add(c)
-c = CoffeeBrands("Red Honey Coffee", 23.99, db.func.current_timestamp(), False)
+db.session.commit()
+
+cn = CoffeeNames("Red Honey Coffee")
+db.session.add(cn)
+db.session.commit()
+c = CoffeeBrands(cn, 23.99)
 db.session.add(c)
-c = CoffeeBrands("Nordish.Coffee", 28.90, db.func.current_timestamp(), False)
+db.session.commit()
+
+cn = CoffeeNames("Nordish.Coffee")
+db.session.add(cn)
+db.session.commit()
+c = CoffeeBrands(cn, 28.90)
 db.session.add(c)
 db.session.commit()
 

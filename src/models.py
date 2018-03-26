@@ -1,8 +1,9 @@
 # encoding: utf-8
 
 from PICoffee import db, login_manager
-from sqlalchemy.dialects.postgresql import ARRAY, MONEY
+from sqlalchemy.dialects.postgresql import ARRAY
 from flask_login.mixins import UserMixin
+from sqlalchemy.orm import relationship
 
 class Users(UserMixin, db.Model):
   __tablename__ = 'Users'
@@ -16,7 +17,6 @@ class Users(UserMixin, db.Model):
   lastlogin = db.Column(db.DateTime, server_onupdate=db.func.now(), nullable=True)
   createtime = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
   role = db.Column(db.SmallInteger, default=0, nullable=False)
-  registered = db.Column(db.Boolean, default=False)
   deleted = db.Column(db.Boolean, default=False)
   userconsumption = db.relationship('Consumption', backref='userconsumption', lazy='dynamic')
 
@@ -26,6 +26,9 @@ class Users(UserMixin, db.Model):
     self.email = email
     self.firstname = firstname
     self.lastname = lastname
+  
+  def __repr__(self):
+    return '<Users %r>' % (self.name)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -34,20 +37,32 @@ def load_user(user_id):
 class CoffeeBrands(db.Model):
   __tablename__ = 'CoffeeBrands'
   id = db.Column(db.SmallInteger, primary_key=True)
-  name = db.Column(db.String(100), nullable=False)
-  kgprice = db.Column(MONEY, nullable=False)
-  updatetime = db.Column(db.DateTime, server_onupdate=db.func.now(), nullable=True)
+  name_id = db.Column(db.SmallInteger, db.ForeignKey('CoffeeNames.id'), nullable=False)
+  name = relationship('CoffeeNames', foreign_keys='CoffeeBrands.name_id', lazy='joined')
+  kgprice = db.Column(db.Numeric(5, 2), nullable=False)
   createtime = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
   hide = db.Column(db.Boolean, default=False)
+  version = db.Column(db.SmallInteger, default=0)
   consumptionbrand = db.relationship('Consumption', backref='consumptionbrand', lazy='dynamic')
   activedatabrand = db.relationship('ActiveData', backref='activedatabrand', lazy='dynamic')
 
-  def __init__(self, name, kgprice, updatetime, hide):
-    self.name = name
+  def __init__(self, coffeename, kgprice):
+    self.name_id = coffeename.id
     self.kgprice = kgprice
-    self.updatetime = updatetime
-    self.hide = hide
+  
+  def __repr__(self):
+    return '<CoffeeBrands %r>' % (self.name)
 
+class CoffeeNames(db.Model):
+  __tablename__ = 'CoffeeNames'
+  id = db.Column(db.SmallInteger, primary_key=True)
+  name = db.Column(db.String(100), nullable=False)
+  
+  def __init__(self, name):
+    self.name = name
+  
+  def __repr__(self):
+    return '<CoffeeNames %r>' % (self.name)
 
 class Consumption(db.Model):
   __tablename__ = 'Consumption'
@@ -61,7 +76,9 @@ class Consumption(db.Model):
     self.user_id = userconsumption.id
     self.coffeebrand_id = consumptionbrand.id
     self.amount = amount
-
+  
+  def __repr__(self):
+    return '<Consumption %r>' % (self.name)
 
 class ActiveData(db.Model):
   __tablename__ = 'ActiveData'
@@ -70,8 +87,9 @@ class ActiveData(db.Model):
   user_id = db.Column(db.SmallInteger, nullable=True)
   inuse = db.Column(db.Boolean, default=False)
   power = db.Column(db.Boolean, default=True)
-
+  
   def __init__(self, activedatabrand):
     self.coffeebrand_id = activedatabrand.id
-
-
+  
+  def __repr__(self):
+    return '<ActiveData %r>' % (self.name)
