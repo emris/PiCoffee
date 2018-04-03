@@ -6,8 +6,8 @@ from models import Users, CoffeeNames, CoffeeBrands, ActiveData
 #Create DB
 db.create_all()
 
-# Add Admin User with Password "1234qwer" and a few test Tokens
-u = Users("admin", "sha256$XCRgZK7p$0177c009969b8e1aee62e97b25d52c091117c82266cbfc565447ce74882b9f72", "admin@test.org", "Admin", "Admin")
+# Add Admin User (Pass: ChangeMe ) and a few test Tokens
+u = Users("admin", "sha256$wKLjUqT1$d39c19c386b69d8051d55f645ce9abf75e8ea4ed897207b1c2dd23553967a4ee", "admin@test.org", "Admin", "Admin")
 u.tokens = ["12345678", "11223344"]
 u.role = 2
 u.registered = True

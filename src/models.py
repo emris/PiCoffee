@@ -3,7 +3,6 @@
 from PICoffee import db, login_manager
 from sqlalchemy.dialects.postgresql import ARRAY
 from flask_login.mixins import UserMixin
-from sqlalchemy.orm import relationship
 
 class Users(UserMixin, db.Model):
   __tablename__ = 'Users'
@@ -38,7 +37,7 @@ class CoffeeBrands(db.Model):
   __tablename__ = 'CoffeeBrands'
   id = db.Column(db.SmallInteger, primary_key=True)
   name_id = db.Column(db.SmallInteger, db.ForeignKey('CoffeeNames.id'), nullable=False)
-  name = relationship('CoffeeNames', foreign_keys='CoffeeBrands.name_id', lazy='joined')
+  name = db.relationship('CoffeeNames', foreign_keys='CoffeeBrands.name_id', lazy='joined')
   kgprice = db.Column(db.Numeric(5, 2), nullable=False)
   createtime = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
   hide = db.Column(db.Boolean, default=False)

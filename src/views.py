@@ -3,7 +3,7 @@
 from PICoffee import app, db
 from flask import render_template, url_for, request, flash
 from flask_bootstrap import Bootstrap
-from models import Users, CoffeeBrands, CoffeeNames
+from models import Users, CoffeeBrands, CoffeeNames, ActiveData
 from forms import LoginForm, RegisterForm, TokensForm, ProfileUpdateForm, CoffeeBrandForm
 from werkzeug.utils import redirect
 from werkzeug.security import generate_password_hash
@@ -97,15 +97,20 @@ def tokens(a):
 @app.route('/admin/brands/<a>', methods=['GET', 'POST'])
 @login_required
 def brands(a):
-  user = Users.query.filter_by(id=current_user.id).first()
-  if user.role < 1:
+  au = Users.query.filter_by(id=current_user.id).first()
+  if au.role < 1:
     return redirect('/coffee')
 
   form = CoffeeBrandForm()
   bmax = db.session.query(CoffeeBrands.name_id, func.max(CoffeeBrands.version).label('vermax')).group_by(CoffeeBrands.name_id).subquery()
   brands = CoffeeBrands.query.join(bmax, bmax.c.vermax == CoffeeBrands.version).filter(bmax.c.name_id == CoffeeBrands.name_id).all()
+  adata = ActiveData.query.filter_by(id=1).first()
   if request.method == 'POST':
-    if (a == "DEL"):
+    if (a == "USE"):
+      adata.coffeebrand_id = request.form['id']
+      db.session.commit()
+      return redirect('/admin/brands/list')
+    elif (a == "DEL"):
       brand = CoffeeBrands.query.filter_by(id=request.form['id']).first()
       if brand.hide:
         brand.hide = False
@@ -130,9 +135,31 @@ def brands(a):
           db.session.add(brand)
           db.session.commit()
         return redirect('/admin/brands/list')
-      return render_template('brands.html', form=form, brands=brands)
+      return render_template('brands.html', form=form, brands=brands, brandinuse=adata.coffeebrand_id)
   if (a == "list"):
-    return render_template('brands.html', form=form, brands=brands)
+    return render_template('brands.html', form=form, brands=brands, brandinuse=adata.coffeebrand_id)
+  return redirect('/coffee')
+
+@app.route('/admin/accounts/<a>', methods=['GET', 'POST'])
+@login_required
+def accounts(a):
+  au = Users.query.filter_by(id=current_user.id).first()
+  if au.role < 1:
+    return redirect('/coffee')
+
+  if request.method == 'POST':
+    user = Users.query.filter_by(id=request.form['id']).first()
+    if user:
+      if (user.role == 0):
+        user.role = 1
+      else:
+        user.role = 0
+      db.session.commit()
+    return redirect('/admin/accounts/list')
+
+  if (a == "list"):
+    users = Users.query.filter(Users.id > 1).all()
+    return render_template('accounts.html', users=users)
   return redirect('/coffee')
 
 @app.route('/admin', methods=['GET', 'POST'])
