@@ -9,16 +9,16 @@ db.create_all()
 # Add Admin User (Pass: ChangeMe ) and a few test Tokens
 u = Users("admin", "sha256$wKLjUqT1$d39c19c386b69d8051d55f645ce9abf75e8ea4ed897207b1c2dd23553967a4ee", "admin@test.org", "Admin", "Admin")
 u.tokens = ["12345678", "11223344"]
-u.role = 2
+u.role = 3
 u.registered = True
 db.session.add(u)
 db.session.commit()
 
 # Add a few Coffee Brands
-cn = CoffeeNames("Happy Coffee")
+cn = CoffeeNames("Roen Extra Bar")
 db.session.add(cn)
 db.session.commit()
-c = CoffeeBrands(cn, 25.90)
+c = CoffeeBrands(cn, 16.68)
 db.session.add(c)
 db.session.commit()
 

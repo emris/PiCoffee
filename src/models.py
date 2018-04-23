@@ -16,6 +16,7 @@ class Users(UserMixin, db.Model):
   lastlogin = db.Column(db.DateTime, server_onupdate=db.func.now(), nullable=True)
   createtime = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
   role = db.Column(db.SmallInteger, default=0, nullable=False)
+  balance = db.Column(db.Numeric(5, 2), default=0, nullable=False)
   deleted = db.Column(db.Boolean, default=False)
   userconsumption = db.relationship('Consumption', backref='userconsumption', lazy='dynamic')
 

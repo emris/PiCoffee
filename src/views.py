@@ -11,10 +11,11 @@ from flask_login.utils import login_required, logout_user, login_user, current_u
 from sqlalchemy import func
 
 Bootstrap(app)
+title="Coffee APP"
 
 @app.route('/')
 def index():
-  return render_template('index.html')
+  return render_template('index.html', title=title)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -25,13 +26,13 @@ def login():
       login_user(user, remember=form.remember.data)
       return redirect(url_for('coffee'))
     flash('User account waiting for approval!', 'info')
-  return render_template('login.html', form=form)
+  return render_template('login.html', form=form, title=title)
 
 @app.route('/logout')
 @login_required
 def logout():
   logout_user()
-  return render_template('index.html')
+  return render_template('index.html', title=title)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -43,62 +44,60 @@ def register():
       db.session.commit()
       flash('User '+new.uid+' was Registered and is pending approval.', 'success')
       return redirect('/login')
-  return render_template('register.html', form=form)
+  return render_template('register.html', form=form, title=title)
 
 @app.route('/coffee')
 @login_required
 def coffee():
-  user = Users.query.filter_by(id=current_user.id).first()
-  if user.role > 1:
-    return render_template('coffee.html', admin=True)
-  return render_template('coffee.html', admin=False)
+  cu = Users.query.filter_by(id=current_user.id).first()
+  return render_template('coffee.html', admin=(cu.role > 1), title=title)
 
 @app.route('/profile')
 @login_required
 def profile():
-  return render_template('profile.html')
+  return render_template('profile.html', title=title)
 
 @app.route('/profile/update', methods=['GET', 'POST'])
 @login_required
 def profile_update():
   form = ProfileUpdateForm()
-  user = Users.query.filter_by(id=current_user.id).first()
+  cu = Users.query.filter_by(id=current_user.id).first()
   if form.validate_on_submit():
     if form.password1.data != "":
       hashpass = generate_password_hash(form.password1.data, method='sha256')
-      user.password = hashpass
-    user.email = form.email.data
-    user.firstname = form.firstname.data
-    user.lastname = form.lastname.data
+      cu.password = hashpass
+    cu.email = form.email.data
+    cu.firstname = form.firstname.data
+    cu.lastname = form.lastname.data
     db.session.commit()
     flash('User profile updated.', 'success')
     return redirect(url_for('profile'))
-  return render_template('profileupdate.html', form=form, user=user)
+  return render_template('profileupdate.html', form=form, user=cu, title=title)
 
 @app.route('/tokens/<a>', methods=['GET', 'POST'])
 @login_required
 def tokens(a):
   form = TokensForm()
-  user = Users.query.filter_by(id=current_user.id).first()
-  toks=user.tokens[:]
+  cu = Users.query.filter_by(id=current_user.id).first()
+  toks=cu.tokens[:]
   if request.method == 'POST':
     if a == "DEL":
       toks.remove(form.token.data)
-      user.tokens = toks
+      cu.tokens = toks
       db.session.commit()
       return redirect('/tokens/list')
     elif form.validate_on_submit():
       toks.append((form.token.data).upper())
-      user.tokens = toks
+      cu.tokens = toks
       db.session.commit()
       return redirect('/tokens/list')
-  return render_template('tokens.html', form=form, toks=toks)
+  return render_template('tokens.html', form=form, toks=toks, title=title)
 
 @app.route('/admin/brands/<a>', methods=['GET', 'POST'])
 @login_required
 def brands(a):
-  au = Users.query.filter_by(id=current_user.id).first()
-  if au.role < 1:
+  cu = Users.query.filter_by(id=current_user.id).first()
+  if cu.role < 1:
     return redirect('/coffee')
 
   form = CoffeeBrandForm()
@@ -134,32 +133,39 @@ def brands(a):
           brand = CoffeeBrands(cn, form.price.data)
           db.session.add(brand)
           db.session.commit()
-        return redirect('/admin/brands/list')
-      return render_template('brands.html', form=form, brands=brands, brandinuse=adata.coffeebrand_id)
+      return redirect('/admin/brands/list')
   if (a == "list"):
-    return render_template('brands.html', form=form, brands=brands, brandinuse=adata.coffeebrand_id)
+    return render_template('brands.html', form=form, brands=brands, brandinuse=adata.coffeebrand_id, title=title)
   return redirect('/coffee')
 
 @app.route('/admin/accounts/<a>', methods=['GET', 'POST'])
 @login_required
 def accounts(a):
-  au = Users.query.filter_by(id=current_user.id).first()
-  if au.role < 1:
+  cu = Users.query.filter_by(id=current_user.id).first()
+  if cu.role < 1:
     return redirect('/coffee')
 
   if request.method == 'POST':
     user = Users.query.filter_by(id=request.form['id']).first()
-    if user:
-      if (user.role == 0):
-        user.role = 1
-      else:
-        user.role = 0
-      db.session.commit()
+    if a=="endis":
+      if user:
+        if (user.role == 0):
+          user.role = 1
+        else:
+          user.role = 0
+        db.session.commit()
+    if a=="adm":
+      if user:
+        if (user.role == 2):
+          user.role = 1
+        else:
+          user.role = 2
+        db.session.commit()
     return redirect('/admin/accounts/list')
 
   if (a == "list"):
     users = Users.query.filter(Users.id > 1).all()
-    return render_template('accounts.html', users=users)
+    return render_template('accounts.html', users=users, cu=cu, title=title)
   return redirect('/coffee')
 
 @app.route('/admin', methods=['GET', 'POST'])

@@ -67,6 +67,9 @@
                 {% if b.hide %}
                   <button class="btn btn-danger disabled" type="submit" name="use"><i class="glyphicon glyphicon-flash"></i></button>
                 {% else %}
+                {% if brandinuse == b.id %}
+                <button class="btn btn-success disabled"><i class="glyphicon glyphicon-flash"></i></button>
+                {% else %}
                 <form class="form-inline" role="form" method="POST" action="/admin/brands/USE">
                 {{ form.hidden_tag() }}
                 <input id="id" name="id" type="hidden" value="{{b.id}}">
@@ -76,6 +79,7 @@
                   <button class="btn btn-danger" type="submit" name="use"><i class="glyphicon glyphicon-flash"></i></button>
                 {% endif %}
                 </form>
+                {% endif %}
                 {% endif %}
               </td>
             </tr>

@@ -41,3 +41,10 @@ hr {
 .alert {
   margin-bottom: 0px;
 }
+.btnW {
+  max-width: 330px;
+  margin: 0 auto;
+}
+.btnForm {
+  margin-bottom: 4px;
+}
