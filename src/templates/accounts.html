@@ -43,7 +43,7 @@
           </thead>
           <tbody>
           {% for u in users %}
-          {% if u.id != cu.id %}
+          {% if (u.id != cu.id and u.role < cu.role) %}
             <tr>
               <th scope="row">{{loop.index}}</th>
               <td>{{u.uid}}</td>
