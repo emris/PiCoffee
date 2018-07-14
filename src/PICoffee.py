@@ -16,4 +16,4 @@ login_manager.login_view = 'login'
 from views import *
 
 if __name__ == '__main__':
-  app.run(port=54321,host="0.0.0.0")
+    app.run(port=54321,host="0.0.0.0")
